@@ -5,8 +5,8 @@ export const sequelize = new Sequelize({
   host: 'localhost',
   port: 5432,
   database: 'onebitflix_dev',
-  username: 'postgres',
-  password: 'pipe260806',
+  username: process.env.DATABASE_USERNAME,
+  password: process.env.DATABASE_PASSWORD,
   define: {
     underscored: true
   }
