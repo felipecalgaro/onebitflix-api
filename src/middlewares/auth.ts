@@ -21,14 +21,43 @@ export function ensureAuth(
 
   const token = authorizationHeader.replace(/Bearer /, "");
 
-  jwtService.verifyToken(token, (err, decoded) => {
+  jwtService.verifyToken(token, async (err, decoded) => {
     if (err || typeof decoded === "undefined") {
       return res.status(401).json({ message: "Unauthorized: invalid token." });
     }
 
-    userService.findByEmail((decoded as JwtPayload).email).then((user) => {
-      req.user = user;
-      next();
-    });
+    const user = await userService.findByEmail((decoded as JwtPayload).email);
+    req.user = user;
+
+    next();
+  });
+}
+
+export function ensureAuthViaQuery(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized: token not found." });
+  }
+
+  if (typeof token !== "string") {
+    return res
+      .status(400)
+      .json({ message: "Token parameter must be of type of string." });
+  }
+
+  jwtService.verifyToken(token, async (err, decoded) => {
+    if (err || typeof decoded === "undefined") {
+      return res.status(401).json({ message: "Unauthorized: invalid token." });
+    }
+
+    const user = await userService.findByEmail((decoded as JwtPayload).email);
+    req.user = user;
+
+    next();
   });
 }
